@@ -48,6 +48,10 @@ func (r *Result) GetString(key string) string {
 	return v[0]
 }
 
+func (r *Result) GetParams() map[string][]string {
+	return  r.data
+}
+
 func (r *Result) GetInt(key string) int {
 	v := r.data[key]
 	if len(v) < 1 {
