@@ -1,2 +1,4 @@
+github.com/gobs/args v0.0.0-20180315064131-86002b4df18c h1:3r/O0iUDMwVJx8XCrjcUvfmfbVP3poiT+1dLyYzx8+w=
+github.com/gobs/args v0.0.0-20180315064131-86002b4df18c/go.mod h1:ZpqkpUmnBz2Jz7hMGSPRbHtYC82FP/IZ1Y7A2riYH0s=
 github.com/kballard/go-shellquote v0.0.0-20180428030007-95032a82bc51 h1:Z9n2FFNUXsshfwJMBgNA0RU6/i7WVaAegv3PtuIHPMs=
 github.com/kballard/go-shellquote v0.0.0-20180428030007-95032a82bc51/go.mod h1:CzGEWj7cYgsdH8dAjBGEr58BoE7ScuLd+fwFZ44+/x8=

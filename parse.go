@@ -1,43 +1,19 @@
 package parse
 
 import (
+	"fmt"
+	"github.com/kballard/go-shellquote"
 	"strconv"
 	"strings"
+)
 
-	"github.com/kballard/go-shellquote"
+const (
+	NoKeyValue = "#nokeyvalue-parse_"
 )
 
 type Result struct {
-	data map[string][]string
-}
-
-func (r *Result) GetStringSlice(key string) (res []string) {
-	for _, v := range r.data[key] {
-		res = append(res, v)
-	}
-	return
-}
-
-func (r *Result) GetIntSlice(key string) (res []int) {
-	for _, v := range r.data[key] {
-		v1, err := strconv.ParseInt(v, 10, 64)
-		if err != nil {
-			continue
-		}
-		res = append(res, int(v1))
-	}
-	return
-}
-
-func (r *Result) GetFloatSlice(key string) (res []float64) {
-	for _, v := range r.data[key] {
-		v1, err := strconv.ParseFloat(v, 64)
-		if err != nil {
-			continue
-		}
-		res = append(res, v1)
-	}
-	return
+	data map[string]string
+	sortKeys []string
 }
 
 func (r *Result) GetString(key string) string {
@@ -45,19 +21,16 @@ func (r *Result) GetString(key string) string {
 	if len(v) < 1 {
 		return ""
 	}
-	return v[0]
+	return v
 }
 
-func (r *Result) GetParams() map[string][]string {
-	return  r.data
-}
 
 func (r *Result) GetInt(key string) int {
 	v := r.data[key]
 	if len(v) < 1 {
 		return 0
 	}
-	v1, err := strconv.ParseInt(v[0], 10, 64)
+	v1, err := strconv.ParseInt(v, 10, 64)
 	if err != nil {
 		return 0
 	}
@@ -69,7 +42,7 @@ func (r *Result) GetFloat(key string) float64 {
 	if len(v) < 1 {
 		return 0
 	}
-	v1, err := strconv.ParseFloat(v[0], 64)
+	v1, err := strconv.ParseFloat(v, 64)
 	if err != nil {
 		return 0
 	}
@@ -81,7 +54,7 @@ func (r *Result) GetBool(key string) bool {
 	if len(v) < 1 {
 		return ok
 	}
-	v1, err := strconv.ParseBool(v[0])
+	v1, err := strconv.ParseBool(v)
 	if err != nil {
 		return false
 	}
@@ -92,32 +65,60 @@ func (r *Result) IsExist(key string) bool {
 	_, ok := r.data[key]
 	return ok
 }
-func ParseArgs(args string) (*Result, error) {
-	list, err := shellquote.Split(args)
+
+func (r *Result) DelKey(key string)  {
+	delete(r.data, key)
+}
+
+func (r *Result)String() string {
+	var list []string
+	for _, k := range r.sortKeys {
+		data, ok := r.data[k]
+		if !ok {
+			continue
+		}
+
+		if !strings.Contains(k,NoKeyValue) {
+			list = append(list, "-"+k)
+		}
+
+		if data != "" {
+			list = append(list, data)
+		}
+	}
+	return shellquote.Join(list...)
+}
+
+func ParseArgs(cmdStr string) (*Result, error) {
+	list, err :=  shellquote.Split(cmdStr)
 	if err != nil {
 		return nil, err
 	}
-	r := &Result{data: make(map[string][]string)}
+	fmt.Println(list)
+	r := &Result{data: make(map[string]string)}
 	length := len(list)
 	for i := 0; i < length; i++ {
 		v := list[i]
 		if v[0] != '-' {
+			nk :=  NoKeyValue+strconv.Itoa(i)
+			r.sortKeys = append(r.sortKeys,nk)
+			r.data[nk] = v
 			continue
 		}
 		k := strings.TrimLeft(v, "-")
-		datas := make([]string, 0)
-		for {
-			if i+1 >= length {
-				r.data[k] = append(r.data[k], datas...)
-				break
-			}
-			if list[i+1][0] == '-' {
-				r.data[k] = append(r.data[k], datas...)
-				break
-			}
-			i++
-			datas = append(datas, list[i])
+		r.sortKeys = append(r.sortKeys, k)
+		if i+1>= length {
+			r.data[k] = ""
+			break
 		}
+
+		if list[i+1][0] == '-' {
+			r.data[k] = ""
+			continue
+		}
+
+		i++
+		r.data[k] = list[i]
 	}
 	return r, nil
 }
