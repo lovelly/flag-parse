@@ -1,7 +1,6 @@
 package parse
 
 import (
-	"fmt"
 	"github.com/kballard/go-shellquote"
 	"strconv"
 	"strings"
@@ -94,7 +93,6 @@ func ParseArgs(cmdStr string) (*Result, error) {
 	if err != nil {
 		return nil, err
 	}
-	fmt.Println(list)
 	r := &Result{data: make(map[string]string)}
 	length := len(list)
 	for i := 0; i < length; i++ {
